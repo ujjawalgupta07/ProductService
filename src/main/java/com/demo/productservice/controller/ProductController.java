@@ -1,5 +1,6 @@
 package com.demo.productservice.controller;
 
+import com.demo.productservice.dto.response.GetAllProductsResponseDTO;
 import com.demo.productservice.model.Products;
 import com.demo.productservice.service.ProductService;
 import org.springframework.web.bind.annotation.*;
@@ -13,10 +14,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class ProductController {
 
-    ProductService svc;
+    ProductService productService;
 
     public ProductController(ProductService svc) {
-        this.svc = svc;
+        this.productService = svc;
     }
 
     @PostMapping("/product")
@@ -30,13 +31,24 @@ public class ProductController {
     }
 
     @GetMapping("/products/{id}")
-    public void getProductById(@PathVariable("id") Long productId){
+    public GetAllProductsResponseDTO getProductById(@PathVariable("id") String productId){
         //validations
         if(null == productId){
            // throw exception
         }
+        Products products = productService.getProductById(Long.valueOf(productId));
+        return convertProductToDTO(products);
+    }
 
-        Products products = svc.getProductById(productId);
+    private GetAllProductsResponseDTO convertProductToDTO(Products products) {
+        return GetAllProductsResponseDTO.builder()
+                    .id(products.getId())
+                    .title(products.getTitle())
+                    .description(products.getDescription())
+                    .price(products.getPrice())
+                    .imageUrl(products.getImageUrl())
+                    .category(products.getCategory())
+                .build();
     }
 
     @DeleteMapping("/product/{id}")

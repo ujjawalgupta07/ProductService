@@ -1,5 +1,6 @@
-package com.demo.productservice.model;
+package com.demo.productservice.dto.response;
 
+import com.demo.productservice.model.Categories;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -7,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class Products {
+public class GetAllProductsResponseDTO {
 
     private Long id;
     private String title;
