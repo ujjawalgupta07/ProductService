@@ -1,6 +1,5 @@
 package com.demo.productservice.dto.response;
 
-import com.demo.productservice.model.Categories;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,12 +7,13 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class GetAllProductsResponseDTO {
+public class FakeStoreProductDTO {
 
-    private Long id;
+    private Integer id;
     private String title;
     private String description;
-    private Float price;
-    private String imageUrl;
-    private Categories category;
+    private String price;
+    private String image;
+    private String category;
+
 }

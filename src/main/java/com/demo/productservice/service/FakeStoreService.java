@@ -1,11 +1,15 @@
 package com.demo.productservice.service;
 
-import com.demo.productservice.dto.response.FakeStoreResponseDTO;
+import com.demo.productservice.builder.ProductMapper;
+import com.demo.productservice.dto.response.FakeStoreGetAllProductsResponseDTO;
+import com.demo.productservice.dto.response.FakeStoreProductDTO;
 import com.demo.productservice.model.Products;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -18,28 +22,72 @@ import java.util.Objects;
 public class FakeStoreService implements ProductService{
 
     RestTemplate restTemplate;
+    ProductMapper productMapper;
 
-    public FakeStoreService(RestTemplate restTemplate) {
+    public FakeStoreService(RestTemplate restTemplate, ProductMapper mapper) {
         this.restTemplate = restTemplate;
+        this.productMapper = mapper;
     }
 
     @Override
     public Products getProductById(Long id) {
 
-        ResponseEntity<FakeStoreResponseDTO> response = restTemplate.
+        ResponseEntity<FakeStoreProductDTO> response = restTemplate.
                 getForEntity("https://fakestoreapi.com/products/"+id,
-                        FakeStoreResponseDTO.class);
+                        FakeStoreProductDTO.class);
 
-        FakeStoreResponseDTO fakeStoreResponseDTO = response.getBody();
-        if (Objects.nonNull(fakeStoreResponseDTO)) {
-            return fakeStoreResponseDTO.toProduct(fakeStoreResponseDTO);
+        FakeStoreProductDTO fakeStoreProductDTO = response.getBody();
+        if (Objects.nonNull(fakeStoreProductDTO)) {
+            return productMapper.mapToProduct(fakeStoreProductDTO);
         }
 
         return null;
     }
 
     @Override
-    public void createProduct() {
+    public Products createProduct(String title, String description, String category, String price, String image) {
 
+        FakeStoreProductDTO requestBody =
+                FakeStoreProductDTO.builder()
+                    .title(title)
+                    .description(description)
+                    .category(category)
+                    .price(price)
+                    .image(image)
+                .build();
+
+        FakeStoreProductDTO fakeStoreProductResponse = restTemplate.
+                postForObject("https://fakestoreapi.com/products",
+                requestBody, FakeStoreProductDTO.class);
+
+        if(Objects.nonNull(fakeStoreProductResponse)){
+            return productMapper.mapToProduct(fakeStoreProductResponse);
+        }
+
+        return null;
+
+    }
+
+
+    @Override
+    public List<Products> getAllProducts() {
+        List<Products> products = new ArrayList<>();
+        ResponseEntity<FakeStoreProductDTO[]> responseEntity = restTemplate.getForEntity(
+                "https://fakestoreapi.com/products",
+                FakeStoreProductDTO[].class);
+
+        FakeStoreProductDTO[] dtos = responseEntity.getBody();
+
+        if (dtos == null || dtos.length == 0) {
+            System.out.println("Something went wrong..");
+            return new ArrayList<>();
+        }
+        // create products
+        for (FakeStoreProductDTO dto : dtos) {
+            Products product = productMapper.mapToProduct(dto);
+            products.add(product);
+        }
+
+        return products;
     }
 }

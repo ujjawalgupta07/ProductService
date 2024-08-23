@@ -1,9 +1,16 @@
 package com.demo.productservice.controller;
 
-import com.demo.productservice.dto.response.GetAllProductsResponseDTO;
+import com.demo.productservice.builder.ProductMapper;
+import com.demo.productservice.dto.request.CreateProductRequestDTO;
+import com.demo.productservice.dto.response.ProductResponseDTO;
 import com.demo.productservice.model.Products;
 import com.demo.productservice.service.ProductService;
+import org.apache.coyote.BadRequestException;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Controller is responsible for 3 things ::
@@ -15,40 +22,50 @@ import org.springframework.web.bind.annotation.*;
 public class ProductController {
 
     ProductService productService;
+    ProductMapper productMapper;
 
-    public ProductController(ProductService svc) {
+    public ProductController(ProductService svc, ProductMapper mapper) {
         this.productService = svc;
+        this.productMapper = mapper;
     }
 
     @PostMapping("/product")
-    public void createProduct(){
+    public ProductResponseDTO createProduct(@RequestBody CreateProductRequestDTO createProductRequestDTO){
 
+        Products product = productService.createProduct(createProductRequestDTO.getTitle(),
+                createProductRequestDTO.getDescription(),
+                createProductRequestDTO.getCategory(),
+                createProductRequestDTO.getPrice(),
+                createProductRequestDTO.getImage());
+
+        return productMapper.convertToProductResponseDTO(product);
     }
 
     @GetMapping("/products")
-    public void getAllProducts(){
+    public List<ProductResponseDTO> getAllProducts(){
+        List<Products> productList = productService.getAllProducts();
+        if (CollectionUtils.isEmpty(productList)) {
+            return null;
+        }
 
+        List<ProductResponseDTO> response = new ArrayList<>();
+
+        for (Products p : productList) {
+            response.add(productMapper.convertToProductResponseDTO(p));
+        }
+
+        return response;
     }
 
-    @GetMapping("/products/{id}")
-    public GetAllProductsResponseDTO getProductById(@PathVariable("id") String productId){
+    @GetMapping("/product/{id}")
+    public ProductResponseDTO getProductById(@PathVariable("id") String productId)
+            throws BadRequestException {
         //validations
         if(null == productId){
-           // throw exception
+           throw new BadRequestException("Product Id missing.");
         }
         Products products = productService.getProductById(Long.valueOf(productId));
-        return convertProductToDTO(products);
-    }
-
-    private GetAllProductsResponseDTO convertProductToDTO(Products products) {
-        return GetAllProductsResponseDTO.builder()
-                    .id(products.getId())
-                    .title(products.getTitle())
-                    .description(products.getDescription())
-                    .price(products.getPrice())
-                    .imageUrl(products.getImageUrl())
-                    .category(products.getCategory())
-                .build();
+        return productMapper.convertToProductResponseDTO(products);
     }
 
     @DeleteMapping("/product/{id}")
