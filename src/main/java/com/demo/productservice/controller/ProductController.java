@@ -3,6 +3,8 @@ package com.demo.productservice.controller;
 import com.demo.productservice.builder.ProductMapper;
 import com.demo.productservice.dto.request.CreateProductRequestDTO;
 import com.demo.productservice.dto.response.ProductResponseDTO;
+import com.demo.productservice.exception.InvalidProductIdException;
+import com.demo.productservice.exception.ProductNotFoundException;
 import com.demo.productservice.model.Products;
 import com.demo.productservice.service.ProductService;
 import org.apache.coyote.BadRequestException;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Controller is responsible for 3 things ::
@@ -59,12 +62,16 @@ public class ProductController {
 
     @GetMapping("/product/{id}")
     public ProductResponseDTO getProductById(@PathVariable("id") String productId)
-            throws BadRequestException {
+            throws ProductNotFoundException, InvalidProductIdException {
         //validations
         if(null == productId){
-           throw new BadRequestException("Product Id missing.");
+           throw new InvalidProductIdException("Invalid Product Id.");
         }
         Products products = productService.getProductById(Long.valueOf(productId));
+
+        if(Objects.isNull(products)){
+            throw new ProductNotFoundException("Product not found.");
+        }
         return productMapper.convertToProductResponseDTO(products);
     }
 
