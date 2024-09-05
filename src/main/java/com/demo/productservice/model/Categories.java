@@ -1,14 +1,18 @@
 package com.demo.productservice.model;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.Entity;
+import lombok.*;
+
+import java.io.Serializable;
 
 @Getter
 @Setter
 @Builder
-public class Categories {
+@Entity
+@AllArgsConstructor
+@NoArgsConstructor
+public class Categories extends BaseModel implements Serializable {
 
-    private Long id;
     private String title;
+
 }
