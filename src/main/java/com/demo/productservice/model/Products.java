@@ -17,7 +17,6 @@ public class Products extends BaseModel implements Serializable {
     private String description;
     private Float price;
     private String imageUrl;
-    @ManyToOne
-    @JoinColumn(name = "category_id")
+    @ManyToOne(cascade = {CascadeType.PERSIST})
     private Categories category;
 }
